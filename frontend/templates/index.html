@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; background: #f5f5f5; }
+        h1 { margin-bottom: 20px; }
+        .add-form { display: flex; gap: 8px; margin-bottom: 20px; }
+        .add-form input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+        button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        .btn-add { background: #2563eb; color: white; }
+        .btn-del { background: #ef4444; color: white; font-size: 12px; padding: 6px 10px; }
+        .task-list { list-style: none; }
+        .task-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: white; border-radius: 6px; margin-bottom: 8px; }
+        .task-item.done .task-title { text-decoration: line-through; color: #999; }
+        .task-title { flex: 1; }
+        .empty { color: #999; text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Task Manager</h1>
+    <div class="add-form">
+        <input type="text" id="title" placeholder="New task..." onkeydown="if(event.key==='Enter') addTask()">
+        <button class="btn-add" onclick="addTask()">Add</button>
+    </div>
+    <ul class="task-list" id="tasks"></ul>
+
+    <script>
+        const API = "{{ api_url }}";
+
+        async function loadTasks() {
+            const res = await fetch(`${API}/tasks`);
+            const tasks = await res.json();
+            const list = document.getElementById("tasks");
+            if (tasks.length === 0) {
+                list.innerHTML = '<li class="empty">No tasks yet</li>';
+                return;
+            }
+            list.innerHTML = tasks.map(t => `
+                <li class="task-item ${t.done ? 'done' : ''}">
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id}, this.checked)">
+                    <span class="task-title">${t.title}</span>
+                    <button class="btn-del" onclick="deleteTask(${t.id})">Delete</button>
+                </li>
+            `).join("");
+        }
+
+        async function addTask() {
+            const input = document.getElementById("title");
+            const title = input.value.trim();
+            if (!title) return;
+            await fetch(API + "/tasks", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({title})
+            });
+            input.value = "";
+            loadTasks();
+        }
+
+        async function toggleTask(id, done) {
+            const res = await fetch(`${API}/tasks/${id}`);
+            const task = await res.json();
+            await fetch(`${API}/tasks/${id}`, {
+                method: "PATCH",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({title: task.title, done})
+            });
+            loadTasks();
+        }
+
+        async function deleteTask(id) {
+            await fetch(`${API}/tasks/${id}`, {method: "DELETE"});
+            loadTasks();
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
