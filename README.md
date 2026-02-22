@@ -100,3 +100,38 @@ Your goal is to deploy **both the frontend and backend** in Kubernetes and make 
 - What happens to tasks when a backend pod restarts?
 
 Good luck and happy coding!
+
+---
+
+## Challenge 2: Debug Frontend-Backend Communication
+
+The frontend pod is running and accessible via port-forward, but it's not making successful calls to the backend. Your goal is to figure out **why** and understand the root cause.
+
+### Debugging Steps
+
+1. **Check backend pod logs** — verify if the backend is receiving any requests from the frontend
+   ```bash
+   kubectl logs pod/backend
+   ```
+
+2. **Check browser Network tab** — open the frontend in your browser, open DevTools (F12) → Network tab, and observe:
+   - Are API calls being made?
+   - What URL are they hitting?
+   - What error do you see? (e.g., `net::ERR_CONNECTION_REFUSED`, CORS, timeout)
+
+### Questions To Explore
+
+- Where do the `fetch()` calls in `index.html` actually execute — on the server or in the browser?
+- Can your browser reach a Kubernetes pod IP like `10.42.0.52`?
+- What is the difference between server-side rendering and client-side API calls?
+- If the frontend server renders `API_URL` into the HTML template, who actually makes the HTTP request to that URL?
+
+### Port Forward Commands
+
+```bash
+# Frontend
+kubectl port-forward pod/frontend 3010:3000 --address 0.0.0.0
+
+# Backend
+kubectl port-forward pod/backend 8010:8000 --address 0.0.0.0
+```
