@@ -1,0 +1,28 @@
+FROM python:3.12-slim AS builder
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --no-dev --no-install-project --frozen
+
+COPY main.py .
+
+RUN uv sync --no-dev --frozen
+
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/.venv /app/.venv
+COPY main.py .
+COPY templates/ templates/
+
+ENV PATH="/app/.venv/bin:$PATH"
+
+EXPOSE 3000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3000"]
