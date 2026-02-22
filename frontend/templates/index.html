@@ -29,10 +29,10 @@
     <ul class="task-list" id="tasks"></ul>
 
     <script>
-        const API = "{{ api_url }}";
+        const API = "";
 
         async function loadTasks() {
-            const res = await fetch(`${API}/tasks`);
+            const res = await fetch(`${API}/api/tasks`);
             const tasks = await res.json();
             const list = document.getElementById("tasks");
             if (tasks.length === 0) {
@@ -52,7 +52,7 @@
             const input = document.getElementById("title");
             const title = input.value.trim();
             if (!title) return;
-            await fetch(API + "/tasks", {
+            await fetch(API + "/api/tasks", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({title})
