@@ -126,6 +126,24 @@ The frontend pod is running and accessible via port-forward, but it's not making
 - What is the difference between server-side rendering and client-side API calls?
 - If the frontend server renders `API_URL` into the HTML template, who actually makes the HTTP request to that URL?
 
+### Debug Tip: Use BusyBox to Test from Inside the Cluster
+
+Spin up a temporary pod inside the cluster to test if the backend is reachable internally:
+
+```bash
+# Launch a debug pod and get a shell
+kubectl run debug --rm -it --image=busybox -- sh
+
+# From inside the pod, test backend connectivity
+wget -qO- http://10.42.0.56:8000/tasks
+
+# If you have a Service, test DNS resolution
+nslookup backend
+wget -qO- http://backend:8000/tasks
+```
+
+If the backend responds from inside the cluster but not from your browser, the problem is **not** cluster networking — it's the browser trying to reach a cluster-internal IP.
+
 ### Port Forward Commands
 
 ```bash
