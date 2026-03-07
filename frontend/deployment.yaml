@@ -20,9 +20,9 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 3000
-          env:
-            - name: API_URL
-              value: "http://backend:8000"
+          envFrom:
+            - configMapRef:
+                name: log-config
           readinessProbe:
             httpGet:
               path: /
